@@ -25,7 +25,8 @@ from matplotlib import pyplot as plt
 
 dnnlib.tflib.init_tf()
 
-download.from_google_drive('1CIDc9i070KQhHlkr4yIwoJC8xqrwjE0_', directory="metrics")
+METRICS_PATH = '/storage/feathernox/proj_stylegan/checkpoints/ALAE/metrics'
+download.from_google_drive('1CIDc9i070KQhHlkr4yIwoJC8xqrwjE0_', directory=METRICS_PATH)
 
 
 # Normalize batch of vectors.
@@ -56,7 +57,9 @@ class PPL:
         self.cfg = cfg
 
     def evaluate(self, logger, mapping, decoder, lod, celeba_style=False):
-        distance_measure = pickle.load(open('metrics/vgg16_zhang_perceptual.pkl', 'rb'))
+        distance_measure = pickle.load(open(
+            os.join.path(METRICS_PATH, 'vgg16_zhang_perceptual.pkl'), 'rb')
+        )
         gpu_count = torch.cuda.device_count()
 
         # Sampling loop.

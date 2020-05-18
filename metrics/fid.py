@@ -11,6 +11,7 @@
 
 import dnnlib.tflib
 import pickle
+import os
 from net import *
 from model import Model
 from launcher import run
@@ -29,7 +30,8 @@ import utils
 dnnlib.tflib.init_tf()
 tf_config = {'rnd.np_random_seed': 1000}
 
-download.from_google_drive('1CIDc9i070KQhHlkr4yIwoJC8xqrwjE0_', directory="metrics")
+METRICS_PATH = '/storage/feathernox/proj_stylegan/checkpoints/ALAE/metrics'
+download.from_google_drive('1CIDc9i070KQhHlkr4yIwoJC8xqrwjE0_', directory=METRICS_PATH)
 
 
 class FID:
@@ -40,7 +42,9 @@ class FID:
 
     def evaluate(self, logger, mapping, decoder, model, lod):
         gpu_count = torch.cuda.device_count()
-        inception = pickle.load(open('metrics/inception_v3_features.pkl', 'rb'))
+        inception = pickle.load(open(
+            os.path.join(METRICS_PATH, 'inception_v3_features.pkl'), 'rb')
+        )
 
         # Sampling loop.
         @utils.cache

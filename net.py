@@ -209,7 +209,9 @@ class DecodeBlock(nn.Module):
             x = self.blur(x)
 
         if noise:
-            if noise == 'batch_constant':
+            if isinstance(noise, list):
+                x = torch.addcmul(x, value=1.0, tensor1=self.noise_weight_1, tensor2=noise[0])
+            elif noise == 'batch_constant':
                 x = torch.addcmul(x, value=1.0, tensor1=self.noise_weight_1,
                                   tensor2=torch.randn([1, 1, x.shape[2], x.shape[3]]))
             else:
@@ -229,7 +231,9 @@ class DecodeBlock(nn.Module):
         x = self.conv_2(x)
 
         if noise:
-            if noise == 'batch_constant':
+            if isinstance(noise, list):
+                x = torch.addcmul(x, value=1.0, tensor1=self.noise_weight_1, tensor2=noise[1])
+            elif noise == 'batch_constant':
                 x = torch.addcmul(x, value=1.0, tensor1=self.noise_weight_2,
                                   tensor2=torch.randn([1, 1, x.shape[2], x.shape[3]]))
             else:
@@ -237,7 +241,7 @@ class DecodeBlock(nn.Module):
                                   tensor2=torch.randn([x.shape[0], 1, x.shape[2], x.shape[3]]))
         else:
             s = math.pow(self.layer + 1, 0.5)
-            x = x +  s * torch.exp(-x * x / (2.0 * s * s)) / math.sqrt(2 * math.pi) * 0.8
+            x = x + s * torch.exp(-x * x / (2.0 * s * s)) / math.sqrt(2 * math.pi) * 0.8
 
         x = x + self.bias_2
 
@@ -727,7 +731,11 @@ class Generator(nn.Module):
         x = self.const
 
         for i in range(lod + 1):
-            x = self.decode_block[i](x, styles[:, 2 * i + 0], styles[:, 2 * i + 1], noise)
+            if isinstance(noise, list):
+                x = self.decode_block[i](x, styles[:, 2 * i + 0], styles[:, 2 * i + 1],
+                                         noise[2 * i: 2 * (i + 1)])
+            else:
+                x = self.decode_block[i](x, styles[:, 2 * i + 0], styles[:, 2 * i + 1], noise)
 
         x = self.to_rgb[lod](x)
         return x

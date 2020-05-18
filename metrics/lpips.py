@@ -34,7 +34,8 @@ import utils
 
 dnnlib.tflib.init_tf()
 
-download.from_google_drive('1CIDc9i070KQhHlkr4yIwoJC8xqrwjE0_', directory="metrics")
+METRICS_PATH = '/storage/feathernox/proj_stylegan/checkpoints/ALAE/metrics'
+download.from_google_drive('1N2-m9qszOeVC9Tq77WxsLnuWwOedQiD2', directory=METRICS_PATH)
 
 
 def downscale(images):
@@ -56,7 +57,9 @@ class LPIPS:
 
     def evaluate(self, logger, mapping, decoder, encoder, lod):
         gpu_count = torch.cuda.device_count()
-        distance_measure = pickle.load(open('metrics/vgg16_zhang_perceptual.pkl', 'rb'))
+        distance_measure = pickle.load(open(
+            os.path.join(METRICS_PATH, 'vgg16_zhang_perceptual.pkl'), 'rb')
+        )
 
         dataset = TFRecordsDataset(self.cfg, logger, rank=0, world_size=1, buffer_size_mb=128,
                                    channels=self.cfg.MODEL.CHANNELS, train=False)
@@ -155,5 +158,5 @@ def sample(cfg, logger):
 
 if __name__ == "__main__":
     gpu_count = 1
-    run(sample, get_cfg_defaults(), description='ALAE-lpips', default_config='configs/experiment_celeba.yaml',
+    run(sample, get_cfg_defaults(), description='ALAE-lpips', default_config='configs/celeba.yaml',
         world_size=gpu_count, write_log="metrics/lpips_score.txt")
